@@ -7,7 +7,7 @@ api = P2P(
 )
 
 # 1. Get current balance
-print(api.get_current_balance(accountType="UNIFIED"))
+print(api.get_current_balance(accountType="FUND", coin="USDC"))
 
 # 2. Get account information
 print(api.get_account_information())
