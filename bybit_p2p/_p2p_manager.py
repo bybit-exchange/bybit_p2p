@@ -82,6 +82,7 @@ class P2PManager:
             ))
             handler.setLevel(self._logging_level)
             self.logger.addHandler(handler)
+        self.logger.setLevel(self._logging_level)
 
     def http_req_handler(self, method: P2PMethod, params):
         if params is None:
