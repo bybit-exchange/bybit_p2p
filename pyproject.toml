@@ -17,6 +17,11 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "requests",
+  "requests_toolbelt",
+  "pycryptodome"
+]
 
 [project.urls]
 Homepage = "https://github.com/bybit-exchange/bybit_p2p"
