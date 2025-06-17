@@ -26,3 +26,8 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/bybit-exchange/bybit_p2p"
 Issues = "https://github.com/bybit-exchange/bybit_p2p/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+]
