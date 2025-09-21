@@ -154,7 +154,7 @@ class P2PManager:
 
     def _handle_file_upload(self, params, timestamp):
         upload_file = params["upload_file"]
-        filename = params["filename"]
+        filename = params.get("filename", None)
         data, fname = self._normalize_upload_input(upload_file, filename=filename)
         boundary = "boundary-for-file"
         content_type = f"multipart/form-data; boundary={boundary}"
