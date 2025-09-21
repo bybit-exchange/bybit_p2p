@@ -210,7 +210,8 @@ class P2PRequests(P2PManager):
         """
         Upload file for chats
 
-        :key upload_file: Path to the file to upload. Can be absolute or relative
+        :key upload_file: File to upload. Can be a string path, binary data, etc.
+        :key filename: Sets filename. Default to the string path provided in `upload_file`.
         :return: Response dictionary
         """
 

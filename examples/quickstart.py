@@ -1,5 +1,8 @@
 from bybit_p2p import P2P
 
+# Bybit P2P SDK
+# Refer to the documentation for the correct method description and usage: https://bybit-exchange.github.io/docs/p2p/guide
+
 api = P2P(
     testnet=True,
     api_key="x",
@@ -98,7 +101,7 @@ print(api.get_chat_messages(
 
 # 14. Upload chat file
 print(api.upload_chat_file(
-    upload_file="D:/test.png"
+    upload_file="F:/grub.png"
 ))
 
 # 15. Send chat message
@@ -120,7 +123,7 @@ print(api.post_new_ad(
     price=78.3,
     minAmount=500,
     maxAmount=3500000,
-    remark="Contact @kolya5544 on Telegram once you've paid.",
+    remark="This is example code by @kolya5544. This field corresponds to the P2P ad description",
     tradingPreferenceSet={
             "hasUnPostAd": 0,
             "isKyc": 1,

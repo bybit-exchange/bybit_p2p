@@ -1,8 +1,10 @@
 import base64
 import hashlib
 import hmac
+import io
 import json
 import os
+from typing import Union, BinaryIO, Optional
 
 import requests
 import logging
@@ -95,7 +97,7 @@ class P2PManager:
 
         # Prepare payload and content type based on request method
         if method.http_method == "FILE":
-            payload, content_type, signature = self._handle_file_upload(method, params, timestamp)
+            payload, content_type, signature = self._handle_file_upload(params, timestamp)
         else:
             payload = self._generate_payload(method.http_method, params)
             content_type = "application/json"
@@ -118,21 +120,51 @@ class P2PManager:
             if isinstance(params[i], float) and params[i] == int(params[i]):
                 params[i] = int(params[i])
 
-    def _handle_file_upload(self, method, params, timestamp):
-        filepath = params["upload_file"]
+    BytesLike = Union[bytes, bytearray, memoryview]
+    PathLike = Union[str, os.PathLike]
+    def _normalize_upload_input(
+            self,
+            upload_file: Union[PathLike, BytesLike, BinaryIO],
+            filename: str | None = None,
+    ) -> tuple[bytes, str] | None:
+        if isinstance(upload_file, (bytes, bytearray, memoryview)):
+            data = bytes(upload_file)
+            if not filename:
+                raise ValueError("filename is required when passing raw bytes.")
+            return data, filename
+
+        if hasattr(upload_file, "read"):
+            bio: BinaryIO = upload_file
+            pos = None
+            if hasattr(bio, "tell") and hasattr(bio, "seek"):
+                try:
+                    pos = bio.tell()
+                except Exception:
+                    pos = None
+            data = bio.read()
+            if pos is not None:
+                try:
+                    bio.seek(pos)
+                except Exception:
+                    pass
+            fname = filename or getattr(bio, "name", None)
+            if not fname:
+                raise ValueError("filename is required when passing a file-like without name.")
+            return data, os.path.basename(str(fname))
+
+    def _handle_file_upload(self, params, timestamp):
+        upload_file = params["upload_file"]
+        filename = params["filename"]
+        data, fname = self._normalize_upload_input(upload_file, filename=filename)
         boundary = "boundary-for-file"
         content_type = f"multipart/form-data; boundary={boundary}"
-        filename = os.path.basename(str(filepath))
         mime_type = "image/png"
-
-        with open(filepath, "rb") as f:
-            binary_data = f.read()
 
         files = MultipartEncoder(
             {
                 'upload_file': (
                     filename,
-                    open(filepath, "rb"),
+                    io.BytesIO(data),
                     mime_type
                 )
             },
@@ -142,7 +174,7 @@ class P2PManager:
         payload = (
                       f"--{boundary}\r\n"
                       f"Content-Disposition: form-data; name=\"upload_file\"; filename=\"{filename}\"\r\nContent-Type: {mime_type}\r\n\r\n"
-                  ).encode() + binary_data + f"\r\n--{boundary}--\r\n".encode()
+                  ).encode() + data + f"\r\n--{boundary}--\r\n".encode()
         signature = self._generate_sign_binary(payload, timestamp)
         return files.to_string(), content_type, signature
 
