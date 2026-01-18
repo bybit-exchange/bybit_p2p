@@ -5,7 +5,7 @@ from bybit_p2p import P2P
 
 api = P2P(
     testnet=True,
-    api_key="x",
+    api_key="",
     api_secret="x"
 )
 
