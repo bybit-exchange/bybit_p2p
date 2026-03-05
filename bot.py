@@ -4,6 +4,9 @@ Monitors Bybit P2P advertisements for PKR and sends alerts when:
   - Buy ads are posted below a configurable price threshold (default 285 PKR)
   - Sell ads are posted above a configurable price threshold (default 295 PKR)
   - Any ad description contains phone numbers or third-party references
+
+No Bybit API key required — uses the public endpoint by default.
+Optionally set BYBIT_API_KEY / BYBIT_API_SECRET to use the official authenticated API.
 """
 
 import asyncio
@@ -12,11 +15,10 @@ import os
 import re
 import sys
 
+import requests
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.constants import ParseMode
-
-from bybit_p2p import P2P
 
 load_dotenv()
 
@@ -35,11 +37,59 @@ TOKEN_ID = "USDT"
 CURRENCY_ID = "PKR"
 PAGE_SIZE = 20  # ads per page to fetch
 
+# Public (unauthenticated) Bybit P2P endpoint
+PUBLIC_P2P_URL = "https://api2.bybit.com/fiat/otc/item/online"
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Ad fetching — public (no auth) vs authenticated
+# ---------------------------------------------------------------------------
+
+def _use_authenticated_api() -> bool:
+    return bool(BYBIT_API_KEY and BYBIT_API_SECRET)
+
+
+def fetch_ads_public(side: str, page: int = 1) -> list[dict]:
+    """
+    Fetch P2P ads via the public (unauthenticated) Bybit endpoint.
+    side: "1" = buy (user wants to buy crypto = merchants selling),
+          "0" = sell (user wants to sell crypto = merchants buying)
+    """
+    payload = {
+        "tokenId": TOKEN_ID,
+        "currencyId": CURRENCY_ID,
+        "side": side,
+        "page": str(page),
+        "size": str(PAGE_SIZE),
+    }
+    resp = requests.post(PUBLIC_P2P_URL, json=payload, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+
+    if data.get("ret_code") != 0 and data.get("ret_code") != "0":
+        logger.warning("Public API error: %s", data.get("ret_msg", "unknown"))
+        return []
+
+    result = data.get("result", {})
+    return result.get("items", [])
+
+
+def fetch_ads_authenticated(api, side: str, page: int = 1) -> list[dict]:
+    """Fetch P2P ads via the official authenticated API."""
+    resp = api.get_online_ads(
+        tokenId=TOKEN_ID,
+        currencyId=CURRENCY_ID,
+        side=side,
+        page=page,
+        size=PAGE_SIZE,
+    )
+    return resp.get("result", {}).get("items", [])
+
 
 # ---------------------------------------------------------------------------
 # Detection helpers
@@ -174,34 +224,31 @@ def format_alert(alert: dict) -> str:
 # Scanning loop
 # ---------------------------------------------------------------------------
 
-async def scan_and_notify(api: P2P, bot: Bot):
+async def scan_and_notify(bot: Bot, api=None):
     """Run one scan cycle: fetch ads, check thresholds, send alerts."""
     all_alerts: list[dict] = []
+    use_auth = _use_authenticated_api() and api is not None
 
-    for side_code, side_label in [("0", "buy"), ("1", "sell")]:
+    for side_code, side_label in [("1", "buy"), ("0", "sell")]:
         try:
             page = 1
             while True:
-                resp = api.get_online_ads(
-                    tokenId=TOKEN_ID,
-                    currencyId=CURRENCY_ID,
-                    side=side_code,
-                    page=page,
-                    size=PAGE_SIZE,
-                )
-                items = resp.get("result", {}).get("items", [])
+                if use_auth:
+                    items = fetch_ads_authenticated(api, side_code, page)
+                else:
+                    items = fetch_ads_public(side_code, page)
+
                 if not items:
                     break
 
                 alerts = process_ads(items, side_label)
                 all_alerts.extend(alerts)
 
-                # If fewer results than page size, we've reached the last page
                 if len(items) < PAGE_SIZE:
                     break
                 page += 1
 
-                # Safety limit to avoid infinite loops
+                # Safety limit
                 if page > 10:
                     break
 
@@ -221,33 +268,36 @@ async def scan_and_notify(api: P2P, bot: Bot):
                 parse_mode=ParseMode.MARKDOWN_V2,
                 disable_web_page_preview=True,
             )
-            # Small delay between messages to respect Telegram rate limits
             await asyncio.sleep(0.5)
         except Exception:
             logger.exception("Failed to send alert for user %s", alert["nick"])
 
 
 async def main():
-    # Validate config
+    # Validate required config
     missing = []
     if not TELEGRAM_BOT_TOKEN:
         missing.append("TELEGRAM_BOT_TOKEN")
     if not TELEGRAM_CHAT_ID:
         missing.append("TELEGRAM_CHAT_ID")
-    if not BYBIT_API_KEY:
-        missing.append("BYBIT_API_KEY")
-    if not BYBIT_API_SECRET:
-        missing.append("BYBIT_API_SECRET")
     if missing:
         logger.error("Missing required environment variables: %s", ", ".join(missing))
         logger.error("Copy .env.example to .env and fill in your credentials.")
         sys.exit(1)
 
-    api = P2P(
-        testnet=False,
-        api_key=BYBIT_API_KEY,
-        api_secret=BYBIT_API_SECRET,
-    )
+    # Set up Bybit API (authenticated mode is optional)
+    api = None
+    if _use_authenticated_api():
+        from bybit_p2p import P2P
+        api = P2P(
+            testnet=False,
+            api_key=BYBIT_API_KEY,
+            api_secret=BYBIT_API_SECRET,
+        )
+        logger.info("Using authenticated Bybit API.")
+    else:
+        logger.info("Using public Bybit API (no API key needed).")
+
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
     logger.info("Bot started. Scanning every %d seconds.", SCAN_INTERVAL)
@@ -258,11 +308,13 @@ async def main():
     )
 
     # Send startup message
+    mode = "Authenticated API" if api else "Public API \\(no key needed\\)"
     try:
         await bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
             text=(
                 "✅ *Bybit P2P Monitor Started*\n\n"
+                f"Mode: {mode}\n"
                 f"Token: USDT / PKR\n"
                 f"Buy alert: below {BUY_PRICE_THRESHOLD} PKR\n"
                 f"Sell alert: above {SELL_PRICE_THRESHOLD} PKR\n"
@@ -278,7 +330,7 @@ async def main():
     # Main loop
     while True:
         try:
-            await scan_and_notify(api, bot)
+            await scan_and_notify(bot, api)
         except Exception:
             logger.exception("Unexpected error in scan cycle")
         await asyncio.sleep(SCAN_INTERVAL)
