@@ -59,10 +59,10 @@ class P2PMethods:
     SEND_MESSAGE = P2PMethod(
         "/v5/p2p/chat/message/send",
         "POST",
-        ["message","contentType","sessionId"]
+        ["message", "contentType", "sessionId"]
     )
     GET_MESSAGE_LIST = P2PMethod(
         "/v5/p2p/chat/message/listpage",
         "POST",
-        ["limit","sessionId"]
+        ["limit", "sessionId"]
     )

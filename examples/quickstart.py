@@ -170,7 +170,7 @@ print(api.send_message(
 
 # 21. Get Message List
 print(api.get_message_list(
-    limitId=0,
+    lastId=0,
     sessionId="rl8BAkdDTQDgSTg+FGrPjr6Vc06F1TWGGU7rg1oLqPDKtM0VNXvL1I7Oo1aPYKKWVbnEEZRclyY+/w==",
     limit=30
 ))
