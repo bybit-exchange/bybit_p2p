@@ -122,16 +122,23 @@ class P2PManager:
 
     BytesLike = Union[bytes, bytearray, memoryview]
     PathLike = Union[str, os.PathLike]
+
     def _normalize_upload_input(
             self,
             upload_file: Union[PathLike, BytesLike, BinaryIO],
             filename: str | None = None,
-    ) -> tuple[bytes, str] | None:
+    ) -> tuple[bytes, str]:
         if isinstance(upload_file, (bytes, bytearray, memoryview)):
             data = bytes(upload_file)
             if not filename:
                 raise ValueError("filename is required when passing raw bytes.")
             return data, filename
+
+        if isinstance(upload_file, (str, os.PathLike)):
+            path = os.fspath(upload_file)
+            with open(path, "rb") as f:
+                data = f.read()
+            return data, filename or os.path.basename(path)
 
         if hasattr(upload_file, "read"):
             bio: BinaryIO = upload_file
@@ -152,31 +159,28 @@ class P2PManager:
                 raise ValueError("filename is required when passing a file-like without name.")
             return data, os.path.basename(str(fname))
 
+        raise TypeError(f"Unsupported upload_file type: {type(upload_file)!r}")
+
     def _handle_file_upload(self, params, timestamp):
         upload_file = params["upload_file"]
-        filename = params.get("filename", None)
+        filename = params.get("filename")
         data, fname = self._normalize_upload_input(upload_file, filename=filename)
+
         boundary = "boundary-for-file"
-        content_type = f"multipart/form-data; boundary={boundary}"
         mime_type = "image/png"
 
-        files = MultipartEncoder(
-            {
-                'upload_file': (
-                    filename,
-                    io.BytesIO(data),
-                    mime_type
-                )
+        encoder = MultipartEncoder(
+            fields={
+                "upload_file": (fname, io.BytesIO(data), mime_type)
             },
-            boundary=boundary
+            boundary=boundary,
         )
 
-        payload = (
-                      f"--{boundary}\r\n"
-                      f"Content-Disposition: form-data; name=\"upload_file\"; filename=\"{filename}\"\r\nContent-Type: {mime_type}\r\n\r\n"
-                  ).encode() + data + f"\r\n--{boundary}--\r\n".encode()
-        signature = self._generate_sign_binary(payload, timestamp)
-        return files.to_string(), content_type, signature
+        body = encoder.to_string()
+        content_type = encoder.content_type
+        signature = self._generate_sign_binary(body, timestamp)
+
+        return body, content_type, signature
 
     def _build_headers(self, signature, timestamp, content_type):
         return {
