@@ -51,3 +51,18 @@ class P2PMethods:
                         )
     GET_ONLINE_ADS = P2PMethod("/v5/p2p/item/online", "POST", ["tokenId", "currencyId", "side"])
     GET_USER_PAYMENT_TYPES = P2PMethod("/v5/p2p/user/payment/list", "POST", [])
+    QUERY_CHAT_SESSION_LIST = P2PMethod(
+        "/v5/p2p/chat/session/list",
+        "POST",
+        ["size"]
+    )
+    SEND_MESSAGE = P2PMethod(
+        "/v5/p2p/chat/message/send",
+        "POST",
+        ["message","contentType","sessionId"]
+    )
+    GET_MESSAGE_LIST = P2PMethod(
+        "/v5/p2p/chat/message/listpage",
+        "POST",
+        ["limit","sessionId"]
+    )

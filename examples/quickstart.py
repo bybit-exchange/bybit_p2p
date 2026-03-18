@@ -92,7 +92,7 @@ print(api.mark_as_paid(
     paymentId="5544"
 ))
 
-# 13. Get chat messages
+# 13. [DEPRECATED, DO NOT USE] Get chat messages
 print(api.get_chat_messages(
     orderId="1234567890123456789",
     startMessageId=0,
@@ -104,7 +104,7 @@ print(api.upload_chat_file(
     upload_file="F:/grub.png"
 ))
 
-# 15. Send chat message
+# 15. [DEPRECATED, DO NOT USE] Send chat message
 import uuid
 print(api.send_chat_message(
     message="Hello, please send funds to the bank account specified",
@@ -153,3 +153,24 @@ print(api.get_online_ads(
 
 # 18. Get user payment
 print(api.get_user_payment_types())
+
+# 19. Query Chat Session List
+print(api.query_chat_session_list(
+    lastId=0,
+    size=20,
+    userMaskId="sc696b52c224f42e3b4e572fe3d732464"
+))
+
+# 20. Send Message
+print(api.send_message(
+    message="Hello, please send funds to the bank account specified",
+    contentType="STR",
+    sessionId="rl8BAkdDTQDgSTg+FGrPjr6Vc06F1TWGGU7rg1oLqPDKtM0VNXvL1I7Oo1aPYKKWVbnEEZRclyY+/w=="
+))
+
+# 21. Get Message List
+print(api.get_message_list(
+    limitId=0,
+    sessionId="rl8BAkdDTQDgSTg+FGrPjr6Vc06F1TWGGU7rg1oLqPDKtM0VNXvL1I7Oo1aPYKKWVbnEEZRclyY+/w==",
+    limit=30
+))

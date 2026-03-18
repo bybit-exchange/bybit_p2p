@@ -1,3 +1,5 @@
+import warnings
+
 from ._p2p_manager import P2PManager
 from ._p2p_helper import P2PMethods
 
@@ -193,13 +195,13 @@ class P2PRequests(P2PManager):
 
     def get_chat_messages(self, **kwargs):
         """
-        Get chat messages
-
-        :key orderId: Order ID
-        :key startMessageId: Start message ID to query from
-        :key size: Rows per query
-        :return: Response dictionary
+        Deprecated. Use `get_message_list()` instead.
         """
+        warnings.warn(
+            "get_chat_messages() is deprecated and will stop working soon; use get_message_list() instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
 
         return self.http_req_handler(
             method=P2PMethods.GET_CHAT_MESSAGES,
@@ -222,15 +224,13 @@ class P2PRequests(P2PManager):
 
     def send_chat_message(self, **kwargs):
         """
-        Send chat message
-
-        :key message: Chat message. For `str`, it's text contents. For `pic`, `pdf`, `video`, it's the URL
-        :key contentType: One of the next values: str, pic, pdf, video
-        :key orderId: Order ID
-        :key msgUuid: Client message UUID
-        :key fileName: Filename of the pic, pdf or video.
-        :return: Response dictionary
+        Deprecated. Use `send_message()` instead.
         """
+        warnings.warn(
+            "send_chat_message() is deprecated and will stop working soon; use send_message() instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
 
         return self.http_req_handler(
             method=P2PMethods.SEND_CHAT_MESSAGE,
@@ -289,5 +289,51 @@ class P2PRequests(P2PManager):
 
         return self.http_req_handler(
             method=P2PMethods.GET_USER_PAYMENT_TYPES,
+            params=kwargs
+        )
+
+    def query_chat_session_list(self, **kwargs):
+        """
+        Query chat session list
+
+        :key lastId: ID of the last record on the previous page, used as pagination cursor
+        :key size: Page size
+        :key sessionId: Encrypted session ID
+        :key userMaskId: Masked user ID, obtained from order details (target_user_mask_id)
+        :return: Response dictionary
+        """
+
+        return self.http_req_handler(
+            method=P2PMethods.QUERY_CHAT_SESSION_LIST,
+            params=kwargs
+        )
+
+    def send_message(self, **kwargs):
+        """
+        Send Chat Message
+
+        :key message: Chat message. Is either: the text of the message you send, or the URL of the file you want to send
+        :key contentType: Chat message type.
+        :key sessionId: Encrypted session ID
+        :return: Response dictionary
+        """
+
+        return self.http_req_handler(
+            method=P2PMethods.SEND_MESSAGE,
+            params=kwargs
+        )
+
+    def get_message_list(self, **kwargs):
+        """
+        Get Message List
+
+        :key lastId: ID of the last message on the previous page (descending order); pass 0 to start from the latest
+        :key limit: Page size, maximum 30
+        :key sessionId: Encrypted session ID
+        :return: Response dictionary
+        """
+
+        return self.http_req_handler(
+            method=P2PMethods.GET_MESSAGE_LIST,
             params=kwargs
         )

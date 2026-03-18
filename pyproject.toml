@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bybit_p2p"
-version = "1.2.0"
+version = "1.3.0"
 authors = [
-  { name="Nickolay Kushnarenko", email="kolya@nk.ax" },
+  { name="Nickolay Kushnarenko", email="nickolay.kushnarenko@bybit.com" },
 ]
 description = "Official Bybit P2P API integration library written in Python."
 readme = "README.md"
