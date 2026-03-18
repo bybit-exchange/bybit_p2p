@@ -199,7 +199,7 @@ class P2PRequests(P2PManager):
         """
         warnings.warn(
             "get_chat_messages() is deprecated and will stop working soon; use get_message_list() instead.",
-            FutureWarning,
+            DeprecationWarning,
             stacklevel=2,
         )
 
@@ -228,7 +228,7 @@ class P2PRequests(P2PManager):
         """
         warnings.warn(
             "send_chat_message() is deprecated and will stop working soon; use send_message() instead.",
-            FutureWarning,
+            DeprecationWarning,
             stacklevel=2,
         )
 
