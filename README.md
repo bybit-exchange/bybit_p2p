@@ -1,4 +1,5 @@
 # bybit_p2p
+
 ## Bybit P2P API integration library written in Python
 
 [![pip package](https://img.shields.io/pypi/v/bybit-p2p)](https://pypi.org/project/bybit-p2p/)
@@ -7,21 +8,21 @@
 
 `bybit_p2p` is the official Python SDK for Bybit's P2P API, enabling seamless integration of your software solutions with Bybit's [P2P trading platform](https://www.bybit.com/en/promo/global/p2p-introduce).
 
-- No need to implement signature (HMAC, RSA) logic yourself
-- Easy & quick to work with
-- Actively developed and maintained
+-   No need to implement signature (HMAC, RSA) logic yourself
+-   Easy & quick to work with
+-   Actively developed and maintained
 
-*originally developed by kolya5544*
+_originally developed by kolya5544_
 
 ## Features
 
 bybit_p2p currently implements all methods available for P2P API. The library is in active development, so any newly released features will be added almost immediately. Here is a short list of what the library can do:
 
-- Create, edit, delete, activate advertisements
-- Get pending orders, mark orders as paid, release assets to the buyer
-- Get and send text messages, upload files and send files to the chat
-- Get all public advertisements for tokens
-- ...and so much more! 🌟
+-   Create, edit, delete, activate advertisements
+-   Get pending orders, mark orders as paid, release assets to the buyer
+-   Get and send text messages, upload files and send files to the chat
+-   Get all public advertisements for tokens
+-   ...and so much more! 🌟
 
 All features are usually one method call away and do not require advanced API understanding to interact with.
 
@@ -29,12 +30,13 @@ All features are usually one method call away and do not require advanced API un
 
 bybit_p2p uses a number of projects and technologies to work:
 
-- `requests` & `requests_toolbelt` for HTTP request creation and processing, as well as multiform data requests
-- `PyCrypto` for HMAC and RSA operations
+-   `requests` & `requests_toolbelt` for HTTP request creation and processing, as well as multiform data requests
+-   `PyCrypto` for HMAC and RSA operations
 
 ## Installation
 
-`bybit_p2p` was tested on Python 3.11, but should work on all higher versions as well. The module can be installed manually or via [PyPI](https://pypi.org/project/pybit/) with `pip`:
+`bybit_p2p` was tested on Python 3.11, but should work on all higher versions as well. The module can be installed manually or via [PyPI](https://pypi.org/project/bybit_p2p/) with `pip`:
+
 ```
 pip install bybit-p2p
 ```
@@ -42,11 +44,13 @@ pip install bybit-p2p
 ## Usage
 
 Upon installation, you can use bybit_p2p by importing it in your code:
+
 ```
 from bybit_p2p import P2P
 ```
 
 Here is a quickstart example to get some info from the exchange:
+
 ```
 from bybit_p2p import P2P
 
@@ -101,7 +105,6 @@ Orders:
 | send_chat_message() | Send Chat Message | [/v5/p2p/order/message/send](https://bybit-exchange.github.io/docs/p2p/order/send-chat-msg) |
 | upload_chat_file() | Upload Chat File | [/v5/p2p/oss/upload_file](https://bybit-exchange.github.io/docs/p2p/order/upload-chat-file) |
 | get_chat_messages() | Get Chat Message | [/v5/p2p/order/message/listpage](https://bybit-exchange.github.io/docs/p2p/order/chat-msg) |
-
 
 User:
 | bybit_p2p method name | P2P API method name | P2P API endpoint path |
