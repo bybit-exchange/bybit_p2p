@@ -4,6 +4,11 @@
 
 [![pip package](https://img.shields.io/pypi/v/bybit-p2p)](https://pypi.org/project/bybit-p2p/)
 
+> [!WARNING]
+> `bybit_p2p` is deprecated as of version 1.3.1 and will receive no new features.
+> Please migrate to [`pybit`](https://pypi.org/project/pybit/) for Bybit API integrations.
+> Existing `bybit_p2p` imports remain available in this release for compatibility.
+
 [Этот файл доступен на русском языке!](https://github.com/bybit-exchange/bybit_p2p/blob/master/README_RU.md)
 
 `bybit_p2p` is the official Python SDK for Bybit's P2P API, enabling seamless integration of your software solutions with Bybit's [P2P trading platform](https://www.bybit.com/en/promo/global/p2p-introduce).

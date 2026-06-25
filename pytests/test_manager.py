@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import pytest
 import sys
@@ -11,6 +12,24 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../b
 
 # Now you can import your local library
 from bybit_p2p import P2P
+import bybit_p2p.p2p as p2p_module
+
+
+def test_p2p_deprecation_warning_emitted_once():
+    p2p_module._deprecation_warning_emitted = False
+
+    with warnings.catch_warnings(record=True) as recorded:
+        warnings.simplefilter("always")
+        P2P(testnet=True, api_key="dummy", api_secret="dummy")
+        P2P(testnet=True, api_key="dummy", api_secret="dummy")
+
+    deprecation_warnings = [
+        warning for warning in recorded
+        if issubclass(warning.category, FutureWarning)
+        and "bybit_p2p is deprecated" in str(warning.message)
+    ]
+
+    assert len(deprecation_warnings) == 1
 
 
 def test_generate_payload_get():
