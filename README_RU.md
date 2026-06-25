@@ -4,6 +4,11 @@
 
 [![pip package](https://img.shields.io/pypi/v/bybit-p2p)](https://pypi.org/project/bybit-p2p/)
 
+> [!WARNING]
+> `bybit_p2p` is deprecated as of version 1.3.1 and will receive no new features.
+> Please migrate to [`pybit`](https://pypi.org/project/pybit/) for Bybit API integrations.
+> Existing `bybit_p2p` imports remain available in this release for compatibility.
+
 `bybit_p2p` - официальный Python SDK для P2P API Bybit, обеспечивающий интеграцию ваших программных решений с [P2P-платформой Bybit](https://www.bybit.com/en/promo/global/p2p-introduce).
 
 -   Нет необходимости самостоятельно реализовывать логику подписи запросов на сервер (HMAC, RSA)
